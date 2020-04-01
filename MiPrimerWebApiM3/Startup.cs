@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MiPrimerWebApiM3.Contexts;
+using MiPrimerWebApiM3.Helpers;
+using MiPrimerWebApiM3.Services;
 using Newtonsoft.Json.Serialization;
 
 namespace MiPrimerWebApiM3
@@ -28,12 +30,19 @@ namespace MiPrimerWebApiM3
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<MiFiltro>();
+            services.AddResponseCaching();
+            services.AddTransient<IClaseB, ClaseB>();
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddControllers()
-                .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); 
                 ;
+            services.AddMvc(options =>
+            options.Filters.Add(new MiFiltroExeption())
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +56,8 @@ namespace MiPrimerWebApiM3
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseResponseCaching();
 
             app.UseAuthorization();
 
